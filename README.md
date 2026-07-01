@@ -6,7 +6,7 @@ Sitio profesional para la **Dra. Wendy Yadira Cerecero Salas**, Cirujano Dentist
 Abre `index.html` en cualquier navegador moderno. No requiere build.
 
 ## Live
-- **Production:** https://dra-wendycerecero.github.io/dra-cerecero-portfolio/
+- **Production (Vercel):** https://dra-cerecero.vercel.app
 - **Repo:** https://github.com/dra-wendycerecero/dra-cerecero-portfolio
 
 ## Branches
@@ -14,7 +14,7 @@ Abre `index.html` en cualquier navegador moderno. No requiere build.
 | Branch | Purpose |
 |---|---|
 | `main` | Development. All changes start here. |
-| `prod` | Production. Pushed to main -> create PR main -> prod -> CI/CD deploys to Pages automatically. |
+| `prod` | Production. Merged PRs to `prod` trigger Vercel deployment. |
 
 ## Workflow
 
@@ -22,7 +22,7 @@ Abre `index.html` en cualquier navegador moderno. No requiere build.
 2. Push commits to `main`
 3. Open PR: `main` -> `prod`
 4. CI runs validation (file checks, no leaked tokens, meta tags)
-5. On PR merge into `prod`, CD deploys to GitHub Pages automatically
+5. Merge PR into `prod` — Vercel auto-deploys
 
 ## Files
 - `index.html` — the entire site (HTML + CSS + a small vanilla JS bundle)
@@ -31,5 +31,5 @@ Abre `index.html` en cualquier navegador moderno. No requiere build.
 - `.github/workflows/prod.yml` — CI/CD pipeline
 
 ## CI/CD
-- **Validate job**: checks files exist, page size, meta tags, no leaked secrets
-- **Deploy job**: runs only on push to `prod`, uploads artifact, deploys via official GitHub Pages action
+- **Validate job**: runs on push to `main` — checks files exist, page size, meta tags, no leaked secrets
+- **Deploy**: handled automatically by Vercel (linked to `prod` branch via Vercel GitHub app)
