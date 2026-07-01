@@ -1,0 +1,55 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    branches: [prod]
+    types: [opened, synchronize, closed]
+
+jobs:
+  validate:
+    name: Validate site
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check required files
+        run: |
+          test -f index.html || (echo "index.html missing" && exit 1)
+          test -f favicon.svg || (echo "favicon.svg missing" && exit 1)
+      - name: Check file size
+        run: |
+          SIZE=$(wc -c < index.html)
+          if [ "$SIZE" -gt 524288 ]; then
+            echo "ERROR: index.html exceeds 512KB"
+            exit 1
+          fi
+      - name: Verify meta tags
+        run: |
+          grep -q '<title>' index.html || (echo "Missing <title>" && exit 1)
+          grep -q 'meta name="viewport"' index.html || (echo "Missing viewport" && exit 1)
+          grep -q 'meta name="description"' index.html || (echo "Missing description" && exit 1)
+      - name: Check for leaked tokens
+        run: |
+          if grep -qE 'gh[pousr]_[a-zA-Z0-9]{36}' index.html 2>/dev/null; then
+            echo "ERROR: GitHub token found in index.html"
+            exit 1
+          fi
+          echo "No leaked tokens."
+
+  deploy:
+    name: Deploy to Vercel (production)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && github.base_ref == 'prod'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+      - name: Deploy to Vercel
+        run: vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
